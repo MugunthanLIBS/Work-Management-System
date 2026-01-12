@@ -33,6 +33,8 @@ export const updateProject = async (id, projectData) => {
 };
 
 export const deleteProject = async (id) => {
+console.log("Check: ",id);
+
   const response = await axios.delete(`${API_URL}/${id}`);
   return response.data;
 };

@@ -12,6 +12,7 @@ const Tasks = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [deleteError, setDeleteError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [priorityFilter, setPriorityFilter] = useState('ALL');
@@ -130,17 +131,32 @@ const Tasks = () => {
   const handleDeleteTask = async () => {
     try {
       setActionLoading(true);
+      setDeleteError(null);
       await deleteTask(taskToDelete.id);
       await fetchData();
       setIsDeleteModalOpen(false);
       setTaskToDelete(null);
       setError(null);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete task');
+      const errorMessage = err.response?.data?.message || 'Failed to delete task';
+      setDeleteError(errorMessage);
       console.error('Error deleting task:', err);
+      
+      // For constraint errors, keep modal open. For other errors, close it.
+      if (!errorMessage.includes('dependencies') && !errorMessage.includes('Cannot delete')) {
+        setError(errorMessage);
+        setIsDeleteModalOpen(false);
+        setTaskToDelete(null);
+      }
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const handleOpenDeleteModal = (task) => {
+    setTaskToDelete(task);
+    setDeleteError(null);
+    setIsDeleteModalOpen(true);
   };
 
   const getStatusBadge = (status) => {
@@ -206,7 +222,12 @@ const Tasks = () => {
     <div className="space-y-6">
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex justify-between items-center">
-          <span>{error}</span>
+          <div className="flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <span>{error}</span>
+          </div>
           <button 
             onClick={() => setError(null)}
             className="text-red-700 hover:text-red-900 font-bold text-xl"
@@ -395,10 +416,7 @@ const Tasks = () => {
                       Edit
                     </button>
                     <button
-                      onClick={() => {
-                        setTaskToDelete(task);
-                        setIsDeleteModalOpen(true);
-                      }}
+                      onClick={() => handleOpenDeleteModal(task)}
                       className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition font-medium text-sm"
                     >
                       Delete
@@ -433,10 +451,13 @@ const Tasks = () => {
         onClose={() => {
           setIsDeleteModalOpen(false);
           setTaskToDelete(null);
+          setDeleteError(null);
         }}
         onConfirm={handleDeleteTask}
-        userName={taskToDelete?.title}
+        itemName={taskToDelete?.title}
+        itemType="task"
         isLoading={actionLoading}
+        error={deleteError}
       />
     </div>
   );

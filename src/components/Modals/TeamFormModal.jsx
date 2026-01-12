@@ -1,37 +1,41 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { getAllUsers } from '../../services/userService';
 
 const TeamFormModal = ({ isOpen, onClose, onSubmit, team, isLoading }) => {
-  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm();
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm();
   const [teamLeaders, setTeamLeaders] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [selectedMembers, setSelectedMembers] = useState([]);
 
+  // Fetch users when modal opens
   useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  useEffect(() => {
-    if (team) {
-      const memberIds = team.members ? team.members.map(m => m.id) : [];
-      setSelectedMembers(memberIds);
-      reset({
-        name: team.name,
-        description: team.description,
-        teamLeaderId: team.teamLeader?.id || '',
-        memberIds: memberIds,
-      });
-    } else {
-      setSelectedMembers([]);
-      reset({
-        name: '',
-        description: '',
-        teamLeaderId: '',
-        memberIds: [],
-      });
+    if (isOpen) {
+      fetchUsers();
     }
-  }, [team, reset]);
+  }, [isOpen]);
+
+  // Reset form when team changes or modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      if (team) {
+        const memberIds = team.members ? team.members.map(m => m.id) : [];
+        setSelectedMembers(memberIds);
+        reset({
+          name: team.name || '',
+          description: team.description || '',
+          teamLeaderId: team.teamLeader?.id || '',
+        });
+      } else {
+        setSelectedMembers([]);
+        reset({
+          name: '',
+          description: '',
+          teamLeaderId: '',
+        });
+      }
+    }
+  }, [team, isOpen, reset]);
 
   const fetchUsers = async () => {
     try {
@@ -45,22 +49,24 @@ const TeamFormModal = ({ isOpen, onClose, onSubmit, team, isLoading }) => {
     }
   };
 
-  if (!isOpen) return null;
-
-  const handleMemberToggle = (memberId) => {
+  const handleMemberToggle = useCallback((memberId) => {
     setSelectedMembers(prev => {
-      if (prev.includes(memberId)) {
-        return prev.filter(id => id !== memberId);
-      } else {
-        return [...prev, memberId];
-      }
+      const newMembers = prev.includes(memberId) 
+        ? prev.filter(id => id !== memberId)
+        : [...prev, memberId];
+      return newMembers;
     });
-  };
+  }, []);
 
   const handleFormSubmit = (data) => {
-    data.memberIds = selectedMembers;
-    onSubmit(data);
+    const submitData = {
+      ...data,
+      memberIds: selectedMembers
+    };
+    onSubmit(submitData);
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
@@ -72,6 +78,7 @@ const TeamFormModal = ({ isOpen, onClose, onSubmit, team, isLoading }) => {
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+            type="button"
           >
             ×
           </button>
@@ -85,9 +92,16 @@ const TeamFormModal = ({ isOpen, onClose, onSubmit, team, isLoading }) => {
             </label>
             <input
               type="text"
-              {...register('name', { required: 'Team name is required' })}
+              {...register('name', { 
+                required: 'Team name is required',
+                minLength: {
+                  value: 2,
+                  message: 'Team name must be at least 2 characters'
+                }
+              })}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
               placeholder="Enter team name"
+              key={`name-${team ? team.id : 'new'}`} // Force re-render
             />
             {errors.name && (
               <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
@@ -104,6 +118,7 @@ const TeamFormModal = ({ isOpen, onClose, onSubmit, team, isLoading }) => {
               rows="3"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none"
               placeholder="Enter team description"
+              key={`desc-${team ? team.id : 'new'}`} // Force re-render
             />
           </div>
 
@@ -115,6 +130,7 @@ const TeamFormModal = ({ isOpen, onClose, onSubmit, team, isLoading }) => {
             <select
               {...register('teamLeaderId', { required: 'Team leader is required' })}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+              key={`tl-${team ? team.id : 'new'}`} // Force re-render
             >
               <option value="">Select Team Leader</option>
               {teamLeaders.map(tl => (
@@ -135,7 +151,7 @@ const TeamFormModal = ({ isOpen, onClose, onSubmit, team, isLoading }) => {
             </label>
             <div className="border border-gray-300 rounded-lg p-4 max-h-60 overflow-y-auto">
               {employees.length === 0 ? (
-                <p className="text-gray-500 text-sm">No employees available</p>
+                <p className="text-gray-500 text-sm">Loading employees...</p>
               ) : (
                 <div className="space-y-2">
                   {employees.map(emp => (
@@ -165,6 +181,7 @@ const TeamFormModal = ({ isOpen, onClose, onSubmit, team, isLoading }) => {
               type="button"
               onClick={onClose}
               className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition"
+              disabled={isLoading}
             >
               Cancel
             </button>

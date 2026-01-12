@@ -10,6 +10,7 @@ const Teams = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteError, setDeleteError] = useState(null);
   
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -86,24 +87,43 @@ const Teams = () => {
   const handleDeleteTeam = async () => {
     try {
       setActionLoading(true);
+      setDeleteError(null);
       await deleteTeam(teamToDelete.id);
       await fetchTeams();
       setIsDeleteModalOpen(false);
       setTeamToDelete(null);
       setError(null);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete team');
+      const errorMessage = err.response?.data?.message || 'Failed to delete team';
+      setDeleteError(errorMessage);
       console.error('Error deleting team:', err);
+      
+      if (!errorMessage.includes('assigned to') && !errorMessage.includes('Cannot delete')) {
+        setError(errorMessage);
+        setIsDeleteModalOpen(false);
+        setTeamToDelete(null);
+      }
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const handleOpenDeleteModal = (team) => {
+    setTeamToDelete(team);
+    setDeleteError(null);
+    setIsDeleteModalOpen(true);
   };
 
   return (
     <div className="space-y-6">
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex justify-between items-center">
-          <span>{error}</span>
+          <div className="flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <span>{error}</span>
+          </div>
           <button 
             onClick={() => setError(null)}
             className="text-red-700 hover:text-red-900 font-bold text-xl"
@@ -215,10 +235,7 @@ const Teams = () => {
                     Edit
                   </button>
                   <button
-                    onClick={() => {
-                      setTeamToDelete(team);
-                      setIsDeleteModalOpen(true);
-                    }}
+                    onClick={() => handleOpenDeleteModal(team)}
                     className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition font-medium"
                   >
                     Delete
@@ -234,27 +251,33 @@ const Teams = () => {
         </div>
       </div>
 
-      <TeamFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => {
-          setIsFormModalOpen(false);
-          setSelectedTeam(null);
-        }}
-        onSubmit={selectedTeam ? handleUpdateTeam : handleCreateTeam}
-        team={selectedTeam}
-        isLoading={actionLoading}
-      />
+      // In Teams.js, update the onClose handler for TeamFormModal:
+<TeamFormModal
+  isOpen={isFormModalOpen}
+  onClose={() => {
+    setIsFormModalOpen(false);
+    setSelectedTeam(null);
+    // Optional: add a small delay to ensure form is reset
+    setTimeout(() => {}, 100);
+  }}
+  onSubmit={selectedTeam ? handleUpdateTeam : handleCreateTeam}
+  team={selectedTeam}
+  isLoading={actionLoading}
+/>
 
       <DeleteConfirmModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false);
-          setTeamToDelete(null);
-        }}
-        onConfirm={handleDeleteTeam}
-        userName={teamToDelete?.name}
-        isLoading={actionLoading}
-      />
+  isOpen={isDeleteModalOpen}
+  onClose={() => {
+    setIsDeleteModalOpen(false);
+    setTeamToDelete(null);
+    setDeleteError(null);
+  }}
+  onConfirm={handleDeleteTeam}
+  itemName={teamToDelete?.name}
+  itemType="team"
+  isLoading={actionLoading}
+  error={deleteError}
+/>
     </div>
   );
 };

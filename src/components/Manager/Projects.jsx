@@ -1,6 +1,3 @@
-// ============================================
-// FILE: src/components/Manager/Projects.jsx
-// ============================================
 import React, { useState, useEffect } from 'react';
 import { getAllProjects, createProject, updateProject, deleteProject } from '../../services/projectService';
 import ProjectFormModal from '../Modals/ProjectFormModal';
@@ -12,6 +9,7 @@ const Projects = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [deleteError, setDeleteError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [priorityFilter, setPriorityFilter] = useState('ALL');
@@ -97,18 +95,33 @@ const Projects = () => {
 
   const handleDeleteProject = async () => {
     try {
+      console.log("Delete Confirm: ", projectToDelete.id);
       setActionLoading(true);
+      setDeleteError(null);
       await deleteProject(projectToDelete.id);
       await fetchProjects();
       setIsDeleteModalOpen(false);
       setProjectToDelete(null);
       setError(null);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete project');
+      const errorMessage = err.response?.data?.message || 'Failed to delete project';
+      setDeleteError(errorMessage);
       console.error('Error deleting project:', err);
+      
+      if (!errorMessage.includes('existing tasks') && !errorMessage.includes('Cannot delete')) {
+        setError(errorMessage);
+        setIsDeleteModalOpen(false);
+        setProjectToDelete(null);
+      }
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const handleOpenDeleteModal = (project) => {
+    setProjectToDelete(project);
+    setDeleteError(null);
+    setIsDeleteModalOpen(true);
   };
 
   const getStatusBadge = (status) => {
@@ -157,10 +170,15 @@ const Projects = () => {
     <div className="space-y-6">
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex justify-between items-center">
-          <span>{error}</span>
+          <div className="flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <span>{error}</span>
+          </div>
           <button 
             onClick={() => setError(null)}
-            className="text-red-700 hover:text-red-900 font-bold"
+            className="text-red-700 hover:text-red-900 font-bold text-xl"
           >
             ×
           </button>
@@ -239,7 +257,7 @@ const Projects = () => {
             {filteredProjects.map((project) => (
               <div
                 key={project.id}
-                className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all"
+                className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all"
               >
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-lg font-bold text-gray-800 line-clamp-1 flex-1 mr-2">
@@ -292,10 +310,7 @@ const Projects = () => {
                     Edit
                   </button>
                   <button
-                    onClick={() => {
-                      setProjectToDelete(project);
-                      setIsDeleteModalOpen(true);
-                    }}
+                    onClick={() => handleOpenDeleteModal(project)}
                     className="flex-1 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition font-medium"
                   >
                     Delete
@@ -333,15 +348,18 @@ const Projects = () => {
       />
 
       <DeleteConfirmModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false);
-          setProjectToDelete(null);
-        }}
-        onConfirm={handleDeleteProject}
-        userName={projectToDelete?.name}
-        isLoading={actionLoading}
-      />
+  isOpen={isDeleteModalOpen}
+  onClose={() => {
+    setIsDeleteModalOpen(false);
+    setProjectToDelete(null);
+    setDeleteError(null);
+  }}
+  onConfirm={handleDeleteProject}
+  itemName={projectToDelete?.name}
+  itemType="project"
+  isLoading={actionLoading}
+  error={deleteError}
+/>
     </div>
   );
 };

@@ -10,10 +10,11 @@ const Sidebar = ({ open, setOpen }) => {
     MANAGER: [
       { name: 'Dashboard', path: '/manager-dashboard' },
       { name: 'Users', path: '/manager-dashboard/users' },
+      { name: 'Teams', path: '/manager-dashboard/teams' },
       { name: 'Projects', path: '/manager-dashboard/projects' },
       { name: 'Reports', path: '/manager-dashboard/reports' },
       { name: 'Settings', path: '/manager-dashboard/settings' },
-      { name: 'Teams', path: '/manager-dashboard/teams' },
+
     ],
     TL: [
       { name: 'Dashboard', path: '/tl-dashboard' },
