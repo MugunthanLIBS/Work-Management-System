@@ -24,6 +24,9 @@ import TimeTracking from './components/Employee/TimeTracking';
 import Profile from './components/Employee/Profile';
 import Projects from './components/Manager/Projects';
 import AssignedProjects from './components/TL/AssignedProjects';
+import LeaveApprovals from './components/Manager/LeaveApprovals';
+import LeaveRequests from './components/Employee/LeaveRequests';
+import TLLeaveApprovals from './components/TL/TLLeaveApprovals';
 
 function App() {
   return (
@@ -39,6 +42,7 @@ function App() {
           <Route path="users" element={<UserManagement />} />
           <Route path="teams" element={<Teams />} />
           <Route path="projects" element={<Projects />} />
+          <Route path="leave-approvals" element={<LeaveApprovals />} />
         </Route>
 
         {/* TL */}
@@ -48,6 +52,7 @@ function App() {
           <Route path="tasks" element={<Tasks />} />
           <Route path="projects" element={<AssignedProjects />} />
           <Route path="performance" element={<Performance />} />
+          <Route path="leave-approvals" element={<TLLeaveApprovals />} />
         </Route>
 
         {/* EMPLOYEE */}
@@ -56,6 +61,7 @@ function App() {
           <Route path="tasks" element={<MyTasks />} />
           <Route path="time" element={<TimeTracking />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="leave-requests" element={<LeaveRequests />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

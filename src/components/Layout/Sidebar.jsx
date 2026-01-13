@@ -12,6 +12,7 @@ const Sidebar = ({ open, setOpen }) => {
       { name: 'Users', path: '/manager-dashboard/users' },
       { name: 'Teams', path: '/manager-dashboard/teams' },
       { name: 'Projects', path: '/manager-dashboard/projects' },
+      { name: 'Leave Approvals', path: '/manager-dashboard/leave-approvals' },
       { name: 'Reports', path: '/manager-dashboard/reports' },
       { name: 'Settings', path: '/manager-dashboard/settings' },
 
@@ -21,11 +22,13 @@ const Sidebar = ({ open, setOpen }) => {
       { name: 'Team', path: '/tl-dashboard/team' },
       { name: 'Tasks', path: '/tl-dashboard/tasks' },
       { name: 'Performance', path: '/tl-dashboard/performance' },
+      { name: 'Leave Approvals', path: '/tl-dashboard/leave-approvals' },
       { name: 'Projects', path: '/tl-dashboard/projects' },
     ],
     EMPLOYEE: [
       { name: 'Dashboard', path: '/employee-dashboard' },
       { name: 'My Tasks', path: '/employee-dashboard/tasks' },
+      { name: 'Leave Requests', path: '/employee-dashboard/leave-requests' },
       { name: 'Time Tracking', path: '/employee-dashboard/time' },
       { name: 'Profile', path: '/employee-dashboard/profile' },
     ],
