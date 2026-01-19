@@ -16,6 +16,7 @@ import TLHome from './components/TL/TLHome';
 import TeamMembers from './components/TL/TeamMembers';
 import Tasks from './components/TL/Tasks';
 import Performance from './components/TL/Performance';
+import TLLeaveRequests from './components/TL/LeaveRequests';
 
 // Employee
 import EmployeeHome from './components/Employee/EmployeeHome';
@@ -53,6 +54,7 @@ function App() {
           <Route path="projects" element={<AssignedProjects />} />
           <Route path="performance" element={<Performance />} />
           <Route path="leave-approvals" element={<TLLeaveApprovals />} />
+          <Route path="leave-requests" element={<TLLeaveRequests />} />
         </Route>
 
         {/* EMPLOYEE */}

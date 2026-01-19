@@ -1,4 +1,4 @@
-// src/components/Employee/LeaveRequests.jsx - Multi-level tracking
+// src/components/Employee/LeaveRequests.jsx - Shows dynamic workflow
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import {
@@ -10,6 +10,7 @@ import {
 
 const LeaveRequests = () => {
   const user = useSelector((state) => state.auth.user);
+  const role = useSelector((state) => state.auth.role);
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [balance, setBalance] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -57,7 +58,15 @@ const LeaveRequests = () => {
         reason: '',
       });
       fetchData();
-      alert('Leave request submitted successfully! Pending TL approval.');
+      
+      // Show different messages based on role
+      if (role === 'EMPLOYEE') {
+        alert('Leave request submitted successfully! Pending TL approval.');
+      } else if (role === 'TL') {
+        alert('Leave request submitted successfully! Pending Manager approval.');
+      } else if (role === 'MANAGER') {
+        alert('Leave request auto-approved!');
+      }
     } catch (error) {
       alert(error);
     } finally {
@@ -109,27 +118,76 @@ const LeaveRequests = () => {
   };
 
   const getApprovalProgress = (request) => {
-    const steps = [
-      { name: 'Submitted', completed: true },
-      { 
+    const steps = [];
+    
+    // Always show submitted
+    steps.push({ name: 'Submitted', completed: true });
+    
+    // Show TL step only if required
+    if (request.tlApprovalStatus !== 'NOT_REQUIRED') {
+      steps.push({ 
         name: 'TL Approval', 
         completed: request.tlApprovalStatus === 'APPROVED',
         rejected: request.tlApprovalStatus === 'REJECTED',
         pending: request.tlApprovalStatus === 'PENDING'
-      },
-      { 
+      });
+    }
+    
+    // Show Manager step only if required
+    if (request.managerApprovalStatus !== 'NOT_REQUIRED') {
+      steps.push({ 
         name: 'Manager Approval', 
         completed: request.managerApprovalStatus === 'APPROVED',
         rejected: request.managerApprovalStatus === 'REJECTED',
         pending: request.managerApprovalStatus === 'PENDING'
-      },
-    ];
+      });
+    }
     
     return steps;
   };
 
+  const getWorkflowInfo = () => {
+    if (role === 'EMPLOYEE') {
+      return {
+        title: 'Your Approval Workflow',
+        steps: 'Employee → TL → Manager',
+        description: 'Your leave requests go through TL for initial validation, then Manager for final approval.'
+      };
+    } else if (role === 'TL') {
+      return {
+        title: 'Your Approval Workflow',
+        steps: 'TL → Manager',
+        description: 'Your leave requests go directly to Manager for approval (TL approval skipped).'
+      };
+    } else {
+      return {
+        title: 'Your Approval Workflow',
+        steps: 'Manager → Auto-Approved',
+        description: 'Your leave requests are automatically approved.'
+      };
+    }
+  };
+
+  const workflowInfo = getWorkflowInfo();
+
   return (
     <div className="space-y-6">
+      {/* Workflow Info Banner */}
+      <div className="bg-indigo-50 border-l-4 border-indigo-400 p-4 rounded-lg">
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-indigo-400 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          </svg>
+          <div>
+            <p className="text-sm font-medium text-indigo-800">{workflowInfo.title}</p>
+            <p className="text-sm text-indigo-700 mt-1">
+              <strong>{workflowInfo.steps}</strong>
+            </p>
+            <p className="text-sm text-indigo-600 mt-1">{workflowInfo.description}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Leave Balance Card */}
       {balance && (
         <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
@@ -199,7 +257,7 @@ const LeaveRequests = () => {
                           {getApprovalProgress(request).map((step, idx) => (
                             <React.Fragment key={idx}>
                               <div className="flex flex-col items-center">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs ${
                                   step.completed ? 'bg-green-500 text-white' :
                                   step.rejected ? 'bg-red-500 text-white' :
                                   step.pending ? 'bg-yellow-500 text-white' :
@@ -207,7 +265,7 @@ const LeaveRequests = () => {
                                 }`}>
                                   {step.completed ? '✓' : step.rejected ? '✗' : idx + 1}
                                 </div>
-                                <span className="text-xs mt-1 text-gray-600">{step.name}</span>
+                                <span className="text-xs mt-1 text-gray-600 text-center max-w-[60px]">{step.name}</span>
                               </div>
                               {idx < getApprovalProgress(request).length - 1 && (
                                 <div className={`h-0.5 w-8 ${step.completed ? 'bg-green-500' : 'bg-gray-300'}`}></div>
@@ -350,43 +408,55 @@ const LeaveRequests = () => {
               <div className="space-y-3">
                 <h4 className="font-semibold text-lg">Approval Trail</h4>
                 
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">TL Approval</span>
-                    <span className={`text-sm ${
-                      selectedRequest.tlApprovalStatus === 'APPROVED' ? 'text-green-600' :
-                      selectedRequest.tlApprovalStatus === 'REJECTED' ? 'text-red-600' :
-                      'text-yellow-600'
-                    }`}>
-                      {selectedRequest.tlApprovalStatus}
-                    </span>
+                {selectedRequest.tlApprovalStatus !== 'NOT_REQUIRED' && (
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">TL Approval</span>
+                      <span className={`text-sm ${
+                        selectedRequest.tlApprovalStatus === 'APPROVED' ? 'text-green-600' :
+                        selectedRequest.tlApprovalStatus === 'REJECTED' ? 'text-red-600' :
+                        'text-yellow-600'
+                      }`}>
+                        {selectedRequest.tlApprovalStatus}
+                      </span>
+                    </div>
+                    {selectedRequest.tlApprovedBy && (
+                      <p className="text-sm text-gray-600 mt-1">By: {selectedRequest.tlApprovedBy}</p>
+                    )}
+                    {selectedRequest.tlComments && (
+                      <p className="text-sm text-gray-700 mt-2 italic">"{selectedRequest.tlComments}"</p>
+                    )}
                   </div>
-                  {selectedRequest.tlApprovedBy && (
-                    <p className="text-sm text-gray-600 mt-1">By: {selectedRequest.tlApprovedBy}</p>
-                  )}
-                  {selectedRequest.tlComments && (
-                    <p className="text-sm text-gray-700 mt-2 italic">"{selectedRequest.tlComments}"</p>
-                  )}
-                </div>
+                )}
 
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">Manager Approval</span>
-                    <span className={`text-sm ${
-                      selectedRequest.managerApprovalStatus === 'APPROVED' ? 'text-green-600' :
-                      selectedRequest.managerApprovalStatus === 'REJECTED' ? 'text-red-600' :
-                      'text-yellow-600'
-                    }`}>
-                      {selectedRequest.managerApprovalStatus}
-                    </span>
+                {selectedRequest.managerApprovalStatus !== 'NOT_REQUIRED' && (
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Manager Approval</span>
+                      <span className={`text-sm ${
+                        selectedRequest.managerApprovalStatus === 'APPROVED' ? 'text-green-600' :
+                        selectedRequest.managerApprovalStatus === 'REJECTED' ? 'text-red-600' :
+                        'text-yellow-600'
+                      }`}>
+                        {selectedRequest.managerApprovalStatus}
+                      </span>
+                    </div>
+                    {selectedRequest.managerApprovedBy && (
+                      <p className="text-sm text-gray-600 mt-1">By: {selectedRequest.managerApprovedBy}</p>
+                    )}
+                    {selectedRequest.managerComments && (
+                      <p className="text-sm text-gray-700 mt-2 italic">"{selectedRequest.managerComments}"</p>
+                    )}
                   </div>
-                  {selectedRequest.managerApprovedBy && (
-                    <p className="text-sm text-gray-600 mt-1">By: {selectedRequest.managerApprovedBy}</p>
-                  )}
-                  {selectedRequest.managerComments && (
-                    <p className="text-sm text-gray-700 mt-2 italic">"{selectedRequest.managerComments}"</p>
-                  )}
-                </div>
+                )}
+
+                {selectedRequest.tlApprovalStatus === 'NOT_REQUIRED' && selectedRequest.managerApprovalStatus === 'NOT_REQUIRED' && (
+                  <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                    <p className="text-sm text-green-700">
+                      ✓ This request was auto-approved based on your role.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

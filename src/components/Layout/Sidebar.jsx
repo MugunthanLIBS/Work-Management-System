@@ -24,6 +24,7 @@ const Sidebar = ({ open, setOpen }) => {
       { name: 'Performance', path: '/tl-dashboard/performance' },
       { name: 'Leave Approvals', path: '/tl-dashboard/leave-approvals' },
       { name: 'Projects', path: '/tl-dashboard/projects' },
+      { name: 'My Leave Requests', path: '/tl-dashboard/leave-requests' },
     ],
     EMPLOYEE: [
       { name: 'Dashboard', path: '/employee-dashboard' },
