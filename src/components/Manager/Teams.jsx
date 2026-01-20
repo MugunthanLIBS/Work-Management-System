@@ -250,8 +250,6 @@ const Teams = () => {
           Showing {filteredTeams.length} of {teams.length} teams
         </div>
       </div>
-
-      // In Teams.js, update the onClose handler for TeamFormModal:
 <TeamFormModal
   isOpen={isFormModalOpen}
   onClose={() => {

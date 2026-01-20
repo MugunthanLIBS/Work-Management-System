@@ -13,9 +13,6 @@ const Sidebar = ({ open, setOpen }) => {
       { name: 'Teams', path: '/manager-dashboard/teams' },
       { name: 'Projects', path: '/manager-dashboard/projects' },
       { name: 'Leave Approvals', path: '/manager-dashboard/leave-approvals' },
-      { name: 'Reports', path: '/manager-dashboard/reports' },
-      { name: 'Settings', path: '/manager-dashboard/settings' },
-
     ],
     TL: [
       { name: 'Dashboard', path: '/tl-dashboard' },

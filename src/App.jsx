@@ -6,8 +6,6 @@ import RoleLayout from './components/Layout/RoleLayout';
 
 // Manager
 import ManagerHome from './components/Manager/ManagerHome';
-import Reports from './components/Manager/Reports';
-import Settings from './components/Manager/Settings';
 import UserManagement from './components/Manager/UserManagement';
 import Teams from './components/Manager/Teams';
 
@@ -38,8 +36,6 @@ function App() {
         {/* MANAGER */}
         <Route path="/manager-dashboard" element={<RoleLayout allowedRoles={['MANAGER']} />}>
           <Route index element={<ManagerHome />} />
-          <Route path="reports" element={<Reports />} />
-          <Route path="settings" element={<Settings />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="teams" element={<Teams />} />
           <Route path="projects" element={<Projects />} />

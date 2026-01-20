@@ -1,7 +1,10 @@
 // src/services/leaveService.js - Enhanced for multi-level approval
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/leave';
+const API_URL = 'http://82.29.161.163:8080/api/leave';
+
+// const API_URL = 'http://localhost:8080/api/leave';
+
 
 // Create leave request
 export const createLeaveRequest = async (userId, leaveData) => {

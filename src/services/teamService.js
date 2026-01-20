@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/teams';
+const API_URL = 'http://82.29.161.163:8080/api/teams';
+
+// const API_URL = 'http://localhost:8080/api/teams';
 
 axios.defaults.withCredentials = true;
 

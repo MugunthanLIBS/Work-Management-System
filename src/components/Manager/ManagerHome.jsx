@@ -80,7 +80,7 @@ const ManagerHome = () => {
       {/* Quick Actions */}
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <button
             onClick={() => navigate('/manager-dashboard/users')}
             className="flex items-center gap-3 p-4 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all shadow-md"
@@ -101,20 +101,6 @@ const ManagerHome = () => {
           >
             <span className="text-2xl">📊</span>
             <span className="font-semibold">New Project</span>
-          </button>
-          <button
-            onClick={() => navigate('/manager-dashboard/reports')}
-            className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-md"
-          >
-            <span className="text-2xl">📈</span>
-            <span className="font-semibold">View Reports</span>
-          </button>
-          <button
-            onClick={() => navigate('/manager-dashboard/settings')}
-            className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-md"
-          >
-            <span className="text-2xl">⚙️</span>
-            <span className="font-semibold">Settings</span>
           </button>
         </div>
       </div>

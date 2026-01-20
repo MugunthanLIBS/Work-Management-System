@@ -3,7 +3,9 @@
 // ============================================
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/tasks';
+const API_URL = 'http://82.29.161.163:8080/api/tasks';
+
+// const API_URL = 'http://localhost:8080/api/tasks';
 
 axios.defaults.withCredentials = true;
 
